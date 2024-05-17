@@ -1,0 +1,82 @@
+#!/bin/bash
+
+# BootStrap CloudWatch Agent
+
+# CW IAM Role
+# Role: cloudwatch-agent-role
+# Permission:
+# CloudWatchAgentServerPolicy
+# AmazonSSMManagedInstanceCore
+
+
+# SETUP APACHE WEBSERVER
+sudo yum update -y
+sudo yum install httpd -y
+sudo systemctl start httpd
+sudo systemctl enable httpd
+echo "<html><head><title>CloudTech</title></head><body><br><h1>Welcome to EC2 App Server from CLoudTech</h1></br></br><h3>Please subscribe to our channel and hit that bell icon to receive uptate each time we upload a new video. Thanks</h3></body></html>" | sudo tee /var/www/html/index.html
+
+# SET UP CLOUDWATCH AGENT
+sudo yum install amazon-cloudwatch-agent -y
+sudo yum install collectd -y 
+#	Location: (/opt/aws/amazon-cloudwatch-agent/bin/)
+
+####### -------------------------------------------------------------######
+##            SSH into Instance and Launch CloudWatch Wizard             ##
+####### -------------------------------------------------------------######
+
+# CONFIGURE CLOUDWATCH AGENT
+# Configure CWAgent
+# - sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-config-wizard
+
+
+# Log Path:
+# /var/log/httpd/access_log
+# /var/log/httpd/error_log
+
+# Start the Agent
+#sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
+
+#Check Cloudwatch Agent Status:
+# - sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m ec2 -a status
+
+# ================================================================================
+# If you get this error:
+# ======== Error Log ========
+# 2024-04-20T22:45:46Z E! [telegraf] Error running agent: Error loading config file /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.toml: error parsing # socket_listener, open /usr/share/collectd/types.db: no such file or director
+
+# Run the following command:
+# sudo mkdir -p /usr/share/collectd/
+# sudo touch /usr/share/collectd/types.db
+# ================================================================================
+
+# sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m ec2 -a status
+# (It should now be in a running state
+
+# - sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m ec2 -a stop/start
+
+# ------------------------------------------------------------------------------
+# Lets generate some load on the instance
+# For Amazon Linux 2023: sudo yum install stress -y
+
+# stress --cpu 5
+
+
+# Navigate to CloudWatch --> Metrics --> All metrics --> EC2 --> Per-Instance Metrics --> <Name of the EC2 Instance> --> CPUUtilization
+
+# From Metrics -- Select CWAgent -- ImageId, InstanceId, InstanceType, device, fstype, path
+
+# ------------------------------------------------------------------------------
+
+# Troubleshooting
+# cd /var/log/amazon/
+# vi amazon-cloudwatch-agent/ (You will see two logs - amazon-cloudwatch-agent.log & configuration-validation.log)
+
+# /var/log/amazon/amazon-cloudwatch-agent/amazon-cloudwatch-agent.log
+
+
+# sudo systemctl status amazon-cloudwatch-agent.service
+# sudo systemctl restart amazon-cloudwatch-agent.service
+
+# /bin/systemctl restart amazon-cloudwatch-agent.service
+# /bin/systemctl status amazon-cloudwatch-agent.service
