@@ -1,0 +1,91 @@
+Create VPC
+Create Security Group with the following configurations
+- Inbound Port 22 and port 80
+- Outbound to All
+
+# Install the Amazon CloudWatch Agent and Log to CloudWatch Logs using SSM
+# Create the IAM role for SSM/CloudWatch
+
+1. Create an IAM role with an EC2 trust policy
+
+2. Add the following managed policies
+- CloudWatchAgentServerPolicy
+- AmazonSSMManagedInstanceCore
+
+3. Name the IAM role as below and create
+- CloudWatchAgentServerRole
+
+4. Launch an EC2 instance and attach the role
+
+Navigate to Systems Manager
+- Click Quick Setup on the left pane
+- Click on Library
+- Under Host Management, click Create
+
+Leave the following checked
+- Update Systems Manager (SSM) Agent every two weeks.
+- Collect inventory from your instances every 30 minutes.
+- Scan instances for missing patches daily.
+
+Under Amazon CloudWatch
+Check the following:
+- Install and configure the CloudWatch agent.
+- Update the CloudWatch agent once every 30 days.
+
+Under Targets
+Click Current account
+Click All instances
+Click "Create"
+
+Wait for it to return "Success" status
+
+Navigate to Run Command on the left pane
+- Here you can see all the details  in "Command history" tab and "Commands" tab
+- Click "Run command" on the top right
+- Click the radio button for "AWS-ConfigureAWSPackage"
+- Ensure that under Action, it says Install
+- For the Name, enter AmazonCloudWatchAgent
+- Under Target selection, Click Choose Instances manually or by Tag
+- Uncheck Enable an S3 bucket (If you don't want an S3 bucket to be created)
+- Click Run
+
+
+Navigate to your EC2 Instance and connect to it using EC2 Instance Connect
+
+# Install collectd - This will be used to collect logging information when using the CloudWatch Agent
+sudo yum install collectd -y  
+
+# Run the CloudWatch Agent Wizard on the EC2 instance command line
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-config-wizard
+
+# Run the following command
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
+
+# Start CloudWatch Agent
+sudo systemctl start amazon-cloudwatch-agent
+sudo systemctl status amazon-cloudwatch-agent
+
+# Install stress to loadtest the instance
+sudo yum install stress -y
+
+stress --cpu 5
+
+==================================
+Navigate to CloudWatch --> Metrics --> All metrics --> EC2 --> Per-Instance Metrics --> <Name of the EC2 Instance> --> CPUUtilization
+
+From Metrics -- Select CWAgent -- ImageId, InstanceId, InstanceType, device, fstype, path
+
+------------------------------------------------------------------------------
+Troubleshooting
+
+cd /var/log/amazon/
+vi amazon-cloudwatch-agent/ (You will see two logs - amazon-cloudwatch-agent.log & configuration-validation.log)
+
+/var/log/amazon/amazon-cloudwatch-agent/amazon-cloudwatch-agent.log
+
+
+sudo systemctl status amazon-cloudwatch-agent.service
+sudo systemctl restart amazon-cloudwatch-agent.service
+
+/bin/systemctl restart amazon-cloudwatch-agent.service
+/bin/systemctl status amazon-cloudwatch-agent.service
