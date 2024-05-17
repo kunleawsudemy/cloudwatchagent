@@ -89,3 +89,12 @@ sudo systemctl restart amazon-cloudwatch-agent.service
 
 /bin/systemctl restart amazon-cloudwatch-agent.service
 /bin/systemctl status amazon-cloudwatch-agent.service
+
+# Push to GitHub
+- Create a new repository on GitHub called "CloudWatchAgent"
+- git init
+- git remote add origin https://github.com/kunleawsudemy/cloudwatchagent.git
+
+- In VSCode on the left pane, click Source Control (Ctrl + Shift + G)
+- Enter Commit message
+- Click Commit
