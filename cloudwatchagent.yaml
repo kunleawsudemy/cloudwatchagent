@@ -4,7 +4,7 @@
 
 # CW IAM Role
 # Role: cloudwatch-agent-role
-# Permission:
+# Permission:x
 # CloudWatchAgentServerPolicy
 # AmazonSSMManagedInstanceCore
 
